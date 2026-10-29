@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AETHELSTAN EXCHANGE — USTD | Candlestick</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#050508;--gold:#d4af37;--gold2:#b8941f;--gold3:#8b7300;--text:#f4e481;--green:#26a69a;--red:#ef5350}
+body{font-family:'Courier New',monospace;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+.topbar{background:#0a0a0f;border-bottom:1px solid rgba(212,175,55,.28);padding:10px 18px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{font-size:1.25rem;font-weight:bold;letter-spacing:3px;color:var(--gold);text-shadow:0 0 12px rgba(212,175,55,.4)}
+.logo span{color:var(--gold2);font-size:.7rem;margin-left:6px}
+.btn-wallet{background:linear-gradient(135deg,#b8860b,var(--gold));color:#050508;border:none;padding:8px 15px;border-radius:4px;font-weight:bold;font-size:.78rem;cursor:pointer}
+.btn-wallet.on{background:linear-gradient(135deg,#1b5e20,#4CAF50);color:#fff}
+.main{display:grid;grid-template-columns:1fr 300px 280px;gap:11px;padding:11px;max-width:1580px;margin:0 auto}
+@media(max-width:1100px){.main{grid-template-columns:1fr 280px}}
+@media(max-width:800px){.main{grid-template-columns:1fr}}
+.panel{background:linear-gradient(145deg,rgba(20,18,12,.95),rgba(30,26,15,.9));border:1px solid rgba(212,175,55,.3);border-radius:6px;overflow:hidden}
+.ph{padding:9px 13px;border-bottom:1px solid rgba(212,175,55,.2);display:flex;justify-content:space-between;align-items:center;font-size:.78rem;color:#e9d560}
+.tag{font-size:.62rem;background:rgba(212,175,55,.12);color:var(--gold3);padding:2px 6px;border-radius:3px}
+.chart-h{padding:12px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;border-bottom:1px solid rgba(212,175,55,.15)}
+.pair{font-size:1.1rem;font-weight:bold;color:var(--gold)}
+.pair-sub{font-size:.7rem;color:var(--gold3)}
+.price-big{font-size:1.55rem;font-weight:bold;color:var(--gold)}
+.up{color:var(--green)}.down{color:var(--red)}
+.range-btns{display:flex;gap:4px}
+.range-btns button{padding:4px 9px;font-size:.72rem;border:1px solid rgba(212,175,55,.25);background:transparent;color:var(--gold3);border-radius:3px;cursor:pointer}
+.range-btns button.on{background:rgba(212,175,55,.22);color:var(--gold);border-color:var(--gold)}
+#chart{width:100%!important;height:300px!important;display:block;background:#08080a}
+.ohlc{display:flex;gap:12px;padding:8px 14px;font-size:.7rem;color:var(--gold3);border-top:1px solid rgba(212,175,55,.12);flex-wrap:wrap}
+.ohlc b{color:var(--text)}
+.ob-h{display:grid;grid-template-columns:1fr 1fr 1fr;padding:5px 9px;font-size:.68rem;color:var(--gold3);border-bottom:1px solid rgba(212,175,55,.15)}
+.ob-rows{max-height:180px;overflow-y:auto;font-size:.72rem}
+.ob-row{display:grid;grid-template-columns:1fr 1fr 1fr;padding:2px 9px;position:relative}
+.ob-row.ask{color:var(--red)}.ob-row.bid{color:var(--green)}
+.ob-row .bar{position:absolute;top:0;bottom:0;right:0;opacity:.13}
+.ob-row.ask .bar{background:var(--red)}.ob-row.bid .bar{background:var(--green)}
+.spread{text-align:center;padding:6px;font-size:.74rem;color:var(--gold);background:rgba(0,0,0,.25);border-top:1px solid rgba(212,175,55,.15);border-bottom:1px solid rgba(212,175,55,.15)}
+.trade{padding:12px}
+.tabs{display:flex;margin-bottom:10px}
+.tab{flex:1;padding:8px;font-size:.78rem;cursor:pointer;border:none;background:transparent;color:var(--gold3);border-bottom:2px solid transparent}
+.tab.buy.on{color:var(--green);border-bottom-color:var(--green)}
+.tab.sell.on{color:var(--red);border-bottom-color:var(--red)}
+.field{margin-bottom:9px}
+.field label{display:block;font-size:.68rem;color:var(--gold3);margin-bottom:2px}
+.field input{width:100%;background:rgba(0,0,0,.4);border:1px solid rgba(212,175,55,.25);color:var(--text);padding:8px;border-radius:4px;font-size:.82rem;outline:none}
+.btn-trade{width:100%;padding:11px;border:none;border-radius:4px;font-weight:bold;font-size:.9rem;cursor:pointer;margin-top:4px}
+.btn-buy{background:linear-gradient(135deg,#2e7d32,#26a69a);color:#fff}
+.btn-sell{background:linear-gradient(135deg,#c62828,#ef5350);color:#fff}
+.wallet{padding:12px}
+.w-row{display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid rgba(212,175,55,.1);font-size:.78rem}
+.w-row .a{color:#e9d560}
+.w-addr{font-size:.65rem;color:var(--gold3);margin-top:8px;word-break:break-all}
+.w-status{font-size:.68rem;color:var(--gold3);margin-top:4px}
+.dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#2196F3;margin-right:4px;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+.mkts{max-height:190px;overflow-y:auto}
+.mkt{display:grid;grid-template-columns:1.3fr .8fr .8fr;padding:6px 11px;font-size:.72rem;border-bottom:1px solid rgba(212,175,55,.08);cursor:pointer}
+.mkt:hover,.mkt.on{background:rgba(212,175,55,.07)}
+.mkt .s{color:#e9d560}
+.tbl{width:100%;font-size:.72rem;border-collapse:collapse}
+.tbl th{text-align:left;padding:6px 9px;color:var(--gold3);border-bottom:1px solid rgba(212,175,55,.2);font-weight:normal}
+.tbl td{padding:4px 9px;border-bottom:1px solid rgba(212,175,55,.08)}
+.tbl .b{color:var(--green)}.tbl .s{color:var(--red)}
+.bottom{display:grid;grid-template-columns:1fr 1fr;gap:11px;padding:0 11px 11px;max-width:1580px;margin:0 auto}
+@media(max-width:800px){.bottom{grid-template-columns:1fr}}
+.log{height:110px;overflow-y:auto;font-size:.67rem;padding:7px 11px;color:#c9b24a}
+.log-line{padding:2px 0;border-bottom:1px solid rgba(212,175,55,.06)}
+.net{padding:11px;font-size:.78rem}
+.ok{color:var(--green)}
+.foot{text-align:center;padding:14px;font-size:.68rem;color:#5c4800;border-top:1px solid rgba(212,175,55,.15)}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">AETHELSTAN <span>EXCHANGE</span></div>
+  <button class="btn-wallet" id="btnConnect">Conectar Carteira</button>
+</div>
+
+<div class="main">
+  <!-- CHART + ORDERS -->
+  <div>
+    <div class="panel" style="margin-bottom:11px">
+      <div class="chart-h">
+        <div>
+          <div class="pair">USTD / USDT</div>
+          <div class="pair-sub">Candlestick • Ethereum Spot</div>
+        </div>
+        <div style="text-align:right">
+          <div class="price-big" id="price">1.0000</div>
+          <div class="up" id="chg">+0.00%</div>
+        </div>
+        <div class="range-btns">
+          <button class="on" data-r="1m">1m</button>
+          <button data-r="5m">5m</button>
+          <button data-r="15m">15m</button>
+          <button data-r="1h">1h</button>
+        </div>
+      </div>
+      <canvas id="chart"></canvas>
+      <div class="ohlc">
+        <span>O: <b id="o">1.0000</b></span>
+        <span>H: <b id="h">1.0000</b></span>
+        <span>L: <b id="l">1.0000</b></span>
+        <span>C: <b id="c">1.0000</b></span>
+        <span style="margin-left:auto">Vol: <b id="vol">2.48M</b></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">ORDENS / HISTÓRICO <span class="tag">LIVE</span></div>
+      <table class="tbl">
+        <thead><tr><th>Par</th><th>Tipo</th><th>Preço</th><th>Qtd</th><th>Total</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>USTD/USDT</td><td class="b">BUY</td><td>0.9998</td><td>5,000</td><td>4,999</td><td>Filled</td></tr>
+          <tr><td>USTD/USDT</td><td class="s">SELL</td><td>1.0002</td><td>2,200</td><td>2,200.44</td><td>Filled</td></tr>
+          <tr><td>USTD/USDT</td><td class="b">BUY</td><td>0.9995</td><td>10,000</td><td>9,995</td><td>Partial</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ORDER BOOK -->
+  <div>
+    <div class="panel">
+      <div class="ph">ORDER BOOK <span class="tag">USTD/USDT</span></div>
+      <div class="ob-h"><span>Preço</span><span>Qtd</span><span>Total</span></div>
+      <div class="ob-rows" id="asks"></div>
+      <div class="spread" id="spread">Spread: 0.0008 • Mid 1.0000</div>
+      <div class="ob-rows" id="bids"></div>
+    </div>
+  </div>
+
+  <!-- TRADE + WALLET -->
+  <div>
+    <div class="panel" style="margin-bottom:11px">
+      <div class="ph">SPOT TRADE</div>
+      <div class="trade">
+        <div class="tabs">
+          <button class="tab buy on" data-s="buy">COMPRAR</button>
+          <button class="tab sell" data-s="sell">VENDER</button>
+        </div>
+        <div class="field"><label>Preço (USDT)</label><input type="number" id="tp" value="1.0000" step="0.0001"></div>
+        <div class="field"><label>Quantidade (USTD)</label><input type="number" id="tq" value="1000" step="1"></div>
+        <div class="field"><label>Total (USDT)</label><input type="number" id="tt" value="1000.00" readonly></div>
+        <button class="btn-trade btn-buy" id="btnTrade">COMPRAR USTD</button>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-bottom:11px">
+      <div class="ph"><span class="dot"></span>WALLET AO VIVO</div>
+      <div class="wallet">
+        <div class="w-row"><span class="a">USTD</span><span id="bUstd">—</span></div>
+        <div class="w-row"><span class="a">USDT</span><span id="bUsdt">—</span></div>
+        <div class="w-row"><span class="a">ETH</span><span id="bEth">—</span></div>
+        <div class="w-addr" id="wAddr">Não conectado</div>
+        <div class="w-status" id="wStatus">Aguardando...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="ph">MERCADOS</div>
+      <div class="mkts">
+        <div class="mkt on"><span class="s">USTD/USDT</span><span>1.0000</span><span class="up">+0.01%</span></div>
+        <div class="mkt"><span class="s">BTC/USDT</span><span>67,240</span><span class="up">+1.24%</span></div>
+        <div class="mkt"><span class="s">ETH/USDT</span><span>3,480</span><span class="down">-0.45%</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bottom">
+  <div class="panel">
+    <div class="ph">SYSTEM LOG</div>
+    <div class="log" id="log"></div>
+  </div>
+  <div class="panel">
+    <div class="ph">REDE</div>
+    <div class="net">
+      <div class="w-row"><span>Último Bloco</span><span id="block">#—</span></div>
+      <div class="w-row"><span>Gas</span><span id="gas">— Gwei</span></div>
+      <div class="w-row"><span>RPC</span><span id="rpc">—</span></div>
+      <div class="w-row"><span>Status</span><span class="ok">Online</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="foot">AETHELSTAN EXCHANGE • Candlestick Chart • USTD Spot • © 2026</div>
+
+<script>
+const RPCs=["https://ethereum.publicnode.com","https://rpc.ankr.com/eth","https://eth.llamarpc.com","https://cloudflare-eth.com"];
+let rpcI=0, connected=false, userAddr=null;
+const RESERVA="0xB0A27099582833c0Cb8C7A0565759fF145113d64";
+const USDT="0xdAC17F958D2ee523a2206206994597C13D831ec7";
+
+function log(m){const b=document.getElementById("log");const t=new Date().toTimeString().slice(0,8);const d=document.createElement("div");d.className="log-line";d.textContent=`[${t}] ${m}`;b.insertBefore(d,b.firstChild);if(b.children.length>14)b.removeChild(b.lastChild)}
+function fmt(n,d=2){return Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d})}
+function hexN(h){return parseInt(h,16)}
+
+async function rpc(method,params=[]){
+  for(let i=0;i<RPCs.length;i++){
+    const url=RPCs[(rpcI+i)%RPCs.length];
+    try{
+      const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({jsonrpc:"2.0",id:1,method,params})});
+      const d=await r.json();
+      if(d.result!==undefined){rpcI=(rpcI+i)%RPCs.length;document.getElementById("rpc").textContent=url.replace("https://","").split("/")[0];return d.result}
+    }catch(e){}
+  }
+  throw new Error("RPCs offline");
+}
+
+async function lerSaldos(){
+  const st=document.getElementById("wStatus");
+  st.textContent="Lendo blockchain...";
+  try{
+    const addr=connected&&userAddr?userAddr:RESERVA;
+    const eth=hexN(await rpc("eth_getBalance",[addr,"latest"]))/1e18;
+    document.getElementById("bEth").textContent=fmt(eth,4)+" ETH";
+    const data="0x70a08231"+addr.slice(2).toLowerCase().padStart(64,"0");
+    const usdtH=await rpc("eth_call",[{to:USDT,data},"latest"]);
+    const usdt=(usdtH&&usdtH!=="0x")?hexN(usdtH)/1e6:0;
+    document.getElementById("bUsdt").textContent=fmt(usdt,2)+" USDT";
+    document.getElementById("bUstd").textContent=fmt(1000000+(Math.random()-0.5)*8,2);
+    document.getElementById("block").textContent="#"+hexN(await rpc("eth_blockNumber")).toLocaleString();
+    document.getElementById("gas").textContent=(hexN(await rpc("eth_gasPrice"))/1e9).toFixed(1)+" Gwei";
+    st.textContent="✓ Atualizado "+new Date().toLocaleTimeString("pt-BR");
+    log(`[RPC] ETH ${fmt(eth,4)} | USDT ${fmt(usdt,2)}`);
+  }catch(e){st.textContent="⚠ "+e.message;log("[RPC] "+e.message)}
+}
+
+function genOB(){
+  const asks=document.getElementById("asks"),bids=document.getElementById("bids");
+  asks.innerHTML="";bids.innerHTML="";
+  let p=1.0004;
+  for(let i=0;i<10;i++){
+    const q=Math.floor(Math.random()*7000+300),t=Math.floor(p*q),pct=Math.min(80,q/85);
+    const r=document.createElement("div");r.className="ob-row ask";
+    r.innerHTML=`<span>\( {p.toFixed(4)}</span><span> \){q.toLocaleString()}</span><span>\( {t.toLocaleString()}</span><div class="bar" style="width: \){pct}%"></div>`;
+    asks.appendChild(r);p+=0.00007+Math.random()*0.00003;
+  }
+  p=0.9996;
+  for(let i=0;i<10;i++){
+    const q=Math.floor(Math.random()*7000+300),t=Math.floor(p*q),pct=Math.min(80,q/85);
+    const r=document.createElement("div");r.className="ob-row bid";
+    r.innerHTML=`<span>\( {p.toFixed(4)}</span><span> \){q.toLocaleString()}</span><span>\( {t.toLocaleString()}</span><div class="bar" style="width: \){pct}%"></div>`;
+    bids.appendChild(r);p-=0.00007+Math.random()*0.00003;
+  }
+}
+
+/* ===================== CANDLESTICK ===================== */
+const cv=document.getElementById("chart"),cx=cv.getContext("2d");
+let candles=[],range="1m";
+
+function genCandles(r){
+  const n=r==="1h"?50:r==="15m"?60:r==="5m"?70:85;
+  const out=[];let p=1.0000;const now=Date.now();
+  const ms=r==="1h"?3600000:r==="15m"?900000:r==="5m"?300000:60000;
+  for(let i=n;i>=0;i--){
+    const o=p;
+    const shock=(Math.random()-0.5)*0.0016;
+    const pull=(1.0000-p)*0.15;
+    const c=Math.max(0.9968,Math.min(1.0032,o+shock+pull));
+    const h=Math.max(o,c)+Math.random()*0.00055;
+    const l=Math.min(o,c)-Math.random()*0.00055;
+    out.push({o:+o.toFixed(6),h:+h.toFixed(6),l:+l.toFixed(6),c:+c.toFixed(6)});
+    p=c;
+  }
+  return out;
+}
+
+function resize(){cv.width=cv.parentElement.clientWidth;cv.height=300}
+resize();window.addEventListener("resize",()=>{resize();draw()});
+
+function draw(){
+  if(!candles.length)return;
+  const w=cv.width,h=cv.height;
+  cx.clearRect(0,0,w,h);
+  cx.fillStyle="#08080a";cx.fillRect(0,0,w,h);
+
+  const padL=4,padR=54,padT=12,padB=10;
+  const cw=w-padL-padR,ch=h-padT-padB;
+
+  let min=Math.min(...candles.map(x=>x.l));
+  let max=Math.max(...candles.map(x=>x.h));
+  let rng=max-min||0.001;
+  min-=rng*0.1;max+=rng*0.1;rng=max-min;
+
+  const y=p=>padT+ch-((p-min)/rng)*ch;
+
+  // grid
+  cx.strokeStyle="rgba(212,175,55,0.07)";
+  for(let i=0;i<=5;i++){
+    const yy=padT+(ch/5)*i;
+    cx.beginPath();cx.moveTo(padL,yy);cx.lineTo(w-padR,yy);cx.stroke();
+  }
+
+  // price labels
+  cx.fillStyle="#6b5a00";cx.font="10px Courier New";cx.textAlign="left";
+  for(let i=0;i<=5;i++){
+    const pp=max-(rng/5)*i;
+    cx.fillText(pp.toFixed(4),w-padR+5,padT+(ch/5)*i+3);
+  }
+
+  const gap=cw/candles.length;
+  const bw=Math.max(2.5,gap*0.62);
+
+  candles.forEach((c,i)=>{
+    const x=padL+gap*i+gap/2;
+    const up=c.c>=c.o;
+    const col=up?"#26a69a":"#ef5350";
+
+    // wick
+    cx.strokeStyle=col;cx.lineWidth=1.3;
+    cx.beginPath();cx.moveTo(x,y(c.h));cx.lineTo(x,y(c.l));cx.stroke();
+
+    // body
+    const top=Math.min(y(c.o),y(c.c));
+    const bh=Math.max(1.5,Math.abs(y(c.c)-y(c.o)));
+    cx.fillStyle=col;
+    cx.fillRect(x-bw/2,top,bw,bh);
+  });
+
+  // current price line
+  const last=candles[candles.length-1];
+  const ly=y(last.c);
+  cx.strokeStyle="rgba(212,175,55,0.45)";
+  cx.setLineDash([4,3]);
+  cx.beginPath();cx.moveTo(padL,ly);cx.lineTo(w-padR,ly);cx.stroke();
+  cx.setLineDash([]);
+
+  // price badge
+  cx.fillStyle="#d4af37";
+  cx.fillRect(w-padR+2,ly-9,50,17);
+  cx.fillStyle="#050508";
+  cx.font="bold 10px Courier New";
+  cx.textAlign="center";
+  cx.fillText(last.c.toFixed(4),w-padR+27,ly+3);
+
+  // update headers
+  document.getElementById("price").textContent=last.c.toFixed(4);
+  document.getElementById("o").textContent=last.o.toFixed(4);
+  document.getElementById("h").textContent=last.h.toFixed(4);
+  document.getElementById("l").textContent=last.l.toFixed(4);
+  document.getElementById("c").textContent=last.c.toFixed(4);
+
+  const chg=((last.c-candles[0].o)/candles[0].o)*100;
+  const el=document.getElementById("chg");
+  el.textContent=(chg>=0?"+":"")+chg.toFixed(3)+"%";
+  el.className=chg>=0?"up":"down";
+}
+
+function tick(){
+  if(!candles.length)return;
+  const last=candles[candles.length-1];
+  const shock=(Math.random()-0.5)*0.00085;
+  const c=Math.max(0.9968,Math.min(1.0032,last.c+shock));
+  last.c=+c.toFixed(6);
+  last.h=+Math.max(last.h,c).toFixed(6);
+  last.l=+Math.min(last.l,c).toFixed(6);
+
+  if(Math.random()<0.22){
+    const o=last.c;
+    const nc=Math.max(0.9968,Math.min(1.0032,o+(Math.random()-0.5)*0.0011));
+    candles.push({o:+o.toFixed(6),h:+Math.max(o,nc).toFixed(6),l:+Math.min(o,nc).toFixed(6),c:+nc.toFixed(6)});
+    if(candles.length>90)candles.shift();
+  }
+  draw();
+}
+
+document.querySelectorAll(".range-btns button").forEach(b=>{
+  b.onclick=()=>{
+    document.querySelectorAll(".range-btns button").forEach(x=>x.classList.remove("on"));
+    b.classList.add("on");
+    range=b.dataset.r;
+    candles=genCandles(range);
+    draw();
+  };
+});
+
+document.querySelectorAll(".tab").forEach(t=>{
+  t.onclick=()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+    t.classList.add("on");
+    const s=t.dataset.s;
+    const btn=document.getElementById("btnTrade");
+    if(s==="buy"){btn.textContent="COMPRAR USTD";btn.className="btn-trade btn-buy"}
+    else{btn.textContent="VENDER USTD";btn.className="btn-trade btn-sell"}
+  };
+});
+
+document.getElementById("tp").oninput=document.getElementById("tq").oninput=()=>{
+  const p=+document.getElementById("tp").value||0;
+  const q=+document.getElementById("tq").value||0;
+  document.getElementById("tt").value=(p*q).toFixed(2);
+};
+
+document.getElementById("btnConnect").onclick=async()=>{
+  const btn=document.getElementById("btnConnect");
+  if(connected){
+    connected=false;userAddr=null;
+    btn.textContent="Conectar Carteira";btn.classList.remove("on");
+    document.getElementById("wAddr").textContent="Não conectado";
+    return;
+  }
+  if(!window.ethereum){alert("MetaMask não encontrada");return}
+  try{
+    btn.textContent="Conectando...";
+    const accs=await window.ethereum.request({method:"eth_requestAccounts"});
+    userAddr=accs[0];connected=true;
+    btn.textContent=userAddr.slice(0,6)+"..."+userAddr.slice(-4);
+    btn.classList.add("on");
+    document.getElementById("wAddr").textContent=userAddr;
+    lerSaldos();
+  }catch(e){btn.textContent="Conectar Carteira"}
+};
+
+// INIT
+candles=genCandles("1m");
+draw();
+setInterval(tick,1500);
+genOB();setInterval(genOB,9000);
+lerSaldos();setInterval(lerSaldos,18000);
+log("[SYS] Candlestick chart ativo");
+log("[SYS] AETHELSTAN Exchange pronta");
+</script>
+</body>
+          </html>
