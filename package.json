@@ -1,0 +1,22 @@
+{
+  "name": "aethelstan-exchange",
+  "version": "3.0.0",
+  "description": "AETHELSTAN Exchange — USTD Spot Trading Interface with real-time Web3 balances",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "server": "node server/server.js",
+    "test": "node --test tests/server.test.js"
+  },
+  "dependencies": {
+    "ethers": "^6.13.4",
+    "express": "^4.21.1",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "vite": "^5.4.10"
+  }
+}
